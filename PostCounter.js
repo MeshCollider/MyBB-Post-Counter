@@ -36,7 +36,7 @@ function ButtonClickAction (zEvent) {
 function checkThreadURL() {
 	// SET THIS TO THE THREAD YOU WILL POST THE LEADERBOARD ON
 	var threadID = "5461174";
-	
+
     if(document.URL.indexOf("showthread.php?tid=" + threadID) != -1 && document.URL.indexOf("&page=") == -1) {
         return true;
     }
@@ -44,36 +44,39 @@ function checkThreadURL() {
 }
 
 function createPostCountBox() {
-	
+	var postcounts = [], i, finalBB = [], done = 0;
+
 	// SET THIS TO THE LOUNGE THREAD WHOSE POSTS YOU DON'T WANT TO COUNT
-    var loungeThreadID = "5461783";
-	
+    var loungeThreads = ["5461783", "5499053"];
+
 	// SET THIS ARRAY TO THE USER IDs OF THE GROUP MEMBERS
-    var members = ["3176965", "1680975", "1915596", "504910", "1453525", "2667861", "2181175", "2504443", "2015410", "1610871", "525019", "1343812", "2947999"], postcounts = [], i, finalBB = [], done = 0;    
-    
+    var members = ["3176965", "1680975", "1915596", "504910", "1453525", "2667861", "2181175", "2504443", "2015410", "1610871", "525019", "1343812", "2947999"];
+
 	// SET THIS TO THE OUTPUT OF THE SCRIPT FROM THE PREVIOUS WEEK TO TRACK WEEKLY POSTS
 	var lastWeekInfo = "3176965-188|1680975-91|1915596-139|504910-284|1453525-169|2667861-62|2181175-292|2504443-138|2015410-234|1610871-154|525019-222|1343812-7|2947999-736|";
-    
+
 	// SET THIS TO THE NAME OF THE SUBFORUM YOU WANT TO TRACK
 	var subforumName = "Eclipse";
-	
-	var loungeURL = "https://hackforums.net/misc.php?action=whoposted&tid=" + loungeThreadID;
-	var loungePostContent;
+
+	var loungePostContents = [];
     var thisWeekInfo = "";
-    
-    $.ajax({
+
+    for (i = 0; i < loungeThreads.length; i++) {
+        var loungeURL = "https://hackforums.net/misc.php?action=whoposted&tid=" + loungeThreads[i];
+        $.ajax({
             async: false,
             type: 'GET',
             url: loungeURL,
             success: function(response) {
-                loungePostContent = response;
+                loungePostContents[i] = response;
             },
             error: function(xhr, textStatus, errorThrown ) {
                 $.ajax(this);
                 return;
             }
         });
-    
+    }
+
     finalBB.push('[size=x-large][b]' + subforumName + ' SF Poster Leaderboard[/b][/size]');
     for(i = 0; i < members.length; i++){
         uid = members[i];
@@ -87,15 +90,18 @@ function createPostCountBox() {
                 uid = this.url.split("uid=")[1];
                 username = (response.split("uid=" + uid + "\">")[1]).split("</a>")[0];
                 postcount = (response.split("<a href=\"forumdisplay.php?fid=250\">" + subforumName +"</a></td>\r\n<td class=\"trow1\">")[1]).split("</td>")[0];
+                loungePosts = 0;
 
-                if(loungePostContent.indexOf(username + "</span></a></a></td>\r\n<td class=\"trow2\">") != -1){
-                    loungePosts = (loungePostContent.split(username + "</span></a></a></td>\r\n<td class=\"trow2\">")[1]).split("</td>")[0];
-                } else if(loungePostContent.indexOf(username + "</span></a></a></td>\r\n<td class=\"trow1\">") != -1) {
-                     loungePosts = (loungePostContent.split(username + "</span></a></a></td>\r\n<td class=\"trow1\">")[1]).split("</td>")[0];
-                } else {
-                    loungePosts = 0;
+                var j = 0;
+                for (j = 0; j < loungePostContents.length; j++) {
+                    loungePostContent = loungePostContents[j];
+                    if(loungePostContent.indexOf(username + "</span></a></a></td>\r\n<td class=\"trow2\">") != -1){
+                        loungePosts += parseInt((loungePostContent.split(username + "</span></a></a></td>\r\n<td class=\"trow2\">")[1]).split("</td>")[0]);
+                    } else if(loungePostContent.indexOf(username + "</span></a></a></td>\r\n<td class=\"trow1\">") != -1) {
+                        loungePosts += parseInt((loungePostContent.split(username + "</span></a></a></td>\r\n<td class=\"trow1\">")[1]).split("</td>")[0]);
+                    }
                 }
-                
+
                 thisWeekInfo += uid + "-" + (postcount - loungePosts) + "|";
                 if(lastWeekInfo.indexOf(uid + "-") != -1) {
                     lastWeek = (lastWeekInfo.split(uid + "-")[1]).split("|")[0];
