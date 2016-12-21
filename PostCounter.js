@@ -47,7 +47,7 @@ function createPostCountBox() {
 	var postcounts = [], i, finalBB = [], done = 0;
 
 	// SET THIS TO THE LOUNGE THREAD WHOSE POSTS YOU DON'T WANT TO COUNT
-    var loungeThreads = ["5461783", "5499053"];
+    var loungeThreads = ["5461783"];
 
 	// SET THIS ARRAY TO THE USER IDs OF THE GROUP MEMBERS
     var members = ["3176965", "1680975", "1915596", "504910", "1453525", "2667861", "2181175", "2504443", "2015410", "1610871", "525019", "1343812", "2947999"];
