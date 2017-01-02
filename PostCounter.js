@@ -47,13 +47,13 @@ function createPostCountBox() {
 	var postcounts = [], i, finalBB = [], done = 0;
 
 	// SET THIS TO THE LOUNGE THREAD WHOSE POSTS YOU DON'T WANT TO COUNT
-    var loungeThreads = ["5461783", "5499053"];
+    var loungeThreads = ["5461783", "5500795"];
 
 	// SET THIS ARRAY TO THE USER IDs OF THE GROUP MEMBERS
     var members = ["3176965", "1680975", "1915596", "504910", "1453525", "2667861", "2181175", "2504443", "2015410", "1610871", "525019", "1343812", "2947999"];
 
 	// SET THIS TO THE OUTPUT OF THE SCRIPT FROM THE PREVIOUS WEEK TO TRACK WEEKLY POSTS
-	var lastWeekInfo = "3176965-188|1680975-91|1915596-139|504910-284|1453525-169|2667861-62|2181175-292|2504443-138|2015410-234|1610871-154|525019-222|1343812-7|2947999-736|";
+	var lastWeekInfo = "3176965-188|1680975-97|1915596-151|504910-347|1453525-170|2667861-74|2181175-363|2504443-150|2015410-271|1610871-210|525019-265|1343812-7|2947999-835|";
 
 	// SET THIS TO THE NAME OF THE SUBFORUM YOU WANT TO TRACK
 	var subforumName = "Eclipse";
@@ -78,6 +78,8 @@ function createPostCountBox() {
     }
 
     finalBB.push('[size=x-large][b]' + subforumName + ' SF Poster Leaderboard[/b][/size]');
+    var sortable = [];
+
     for(i = 0; i < members.length; i++){
         uid = members[i];
         var postactivityURL = "hackforums.net/postactivity.php?uid=" + uid;
@@ -110,8 +112,7 @@ function createPostCountBox() {
                     lastWeek = 0;
                 }
                 thisWeek = (postcount - loungePosts) - lastWeek;
-                bbcode = "[url=https://hackforums.net/member.php?action=profile&uid=" + uid + "]" + username + "[/url] - " + postcount + " (" + (postcount - loungePosts) + ") | " + thisWeek + " | " + (2500 - postcount - (-1*loungePosts));
-                finalBB.push(bbcode);
+                sortable.push([uid, username, postcount, (postcount - loungePosts), thisWeek, (2500 - postcount - (-1*loungePosts))]);
             },
             error: function(xhr, textStatus, errorThrown ) {
                 $.ajax(this);
@@ -120,7 +121,18 @@ function createPostCountBox() {
         });
     }
 
-    finalBB.push("\n" + thisWeekInfo);
+    sortable.sort(function(a, b) {
+        return b[3] - a[3];
+    });
+
+    for(i = 0; i < sortable.length; i++)
+    {
+        var bbcode = (i+1) + ") [url=https://hackforums.net/member.php?action=profile&uid=" + sortable[i][0] + "]" + sortable[i][1] + "[/url] - " + sortable[i][2] + " (" + sortable[i][3] + ") | " + sortable[i][4] + " | " + sortable[i][5];
+        finalBB.push(bbcode);
+    }
+
+    var keyText = "Key: Username - Total Posts (Total Posts without lounge) | Posts this week | Posts til award";
+    finalBB.push("\n" + keyText + "\n" + thisWeekInfo);
     finalBB = finalBB.join('\n');
 
     textboxHTML = '<textarea rows="5" cols=100%>' + finalBB + '</textarea>';
